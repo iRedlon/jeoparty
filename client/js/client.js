@@ -934,13 +934,14 @@ function say(text, delay) {
         let msg = new SpeechSynthesisUtterance();
         let voices = window.speechSynthesis.getVoices();
 
-        if (voices.length > 48) {
-          // Attempts to get the Google UK Male voice (if the browser is Chrome)
-          msg.voice = voices[50];
-        } else {
-          // Settles with an American accent :(
-          msg.voice = voices[0];
+        msg.voice = voices[1];
+
+        for (let i = 0; i < voices.length; i++) {
+          if (voices[i].name === 'Google UK English Male') {
+            msg.voice = voices[i];
+          }
         }
+
         msg.voiceURI = "native";
         msg.volume = 1;
         msg.rate = 1;
