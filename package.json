@@ -11,7 +11,7 @@
     "grawlix-racism": "^1.0.2",
     "ip": "^1.1.5",
     "jservice-node": "^0.2.3",
-    "mongoose": "^5.5.2",
+    "mongoose": "^5.7.5",
     "nosleep.js": "^0.9.0",
     "number-to-words": "^1.2.4",
     "remove-accents": "^0.4.2",
