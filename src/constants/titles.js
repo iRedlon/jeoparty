@@ -1,6 +1,6 @@
 exports.titles = {
     2: 'smarty pants',
-    3: 'ap scholar',
+    3: 'a.p. scholar',
     4: 'phd candidate',
     5: 'research fellow',
     6: 'senior professor',

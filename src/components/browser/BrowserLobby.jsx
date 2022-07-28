@@ -80,6 +80,31 @@ const EmailPanelCancelButton = styled.div`
     margin-right: 0.25em;
 `;
 
+const PatchNotesPanel = styled.div`
+    background-color: white;
+    color: black;
+  
+    margin: 1em;
+    padding: 1em;
+`;
+
+const PatchNotesText = styled.p`
+    word-break: break-word;
+`;
+
+const AsciiArtText = styled.p`
+    white-space: pre;
+
+    font-family: monospace;
+    font-weight: bold;
+
+    position: relative;
+    animation: ${props => props.rainbow ? 'rainbow 1s, move-text 1s forwards' : 'move-text 1s forwards'};
+    animation-iteration-count: ${props => props.rainbow ? 'infinite' : 1};
+    animation-delay: ${props => `${0.5 + (props.index / 10)}s`};
+    opacity: 0;
+`;
+
 const LogoRow = styled(Row)`
     ${mixins.flexAlignCenter}
 `;
@@ -188,6 +213,7 @@ const BrowserLobby = () => {
     const [activePlayers, setActivePlayers] = useState(debug ? 10 : 0);
     const [mute, setMute] = useState(true);
 
+    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(true);
     const [showEmailPanel, setShowEmailPanel] = useState(false);
 
     const socket = useContext(SocketContext);
@@ -311,6 +337,53 @@ const BrowserLobby = () => {
                                 Submit
                             </Button>
                         </Form>
+                    </EmailPanel>
+                </MuteScreen>
+            }
+
+            {showPatchNotesPanel &&
+                <MuteScreen>
+                    <EmailPanel>
+                        <EmailPanelCancelButton onClick={() => setShowPatchNotesPanel(false)}>
+                            <ImCancelCircle size={'20px'} />
+                        </EmailPanelCancelButton>
+
+                        <PatchNotesPanel>
+                            <h1>Update</h1>
+
+                            <PatchNotesText>
+                                Sorry I haven't been updating Jeoparty! recently, I graduated college and moved.
+                                Thank you to everyone who has been reporting bugs to me via email and GitHub, please keep them coming.
+                                I'm finally working on the game again and fixing bugs. I also added this "Update" panel
+                                which I will keep posted with patch notes as they come out. The only thing I've fixed
+                                so far is a critical bug on this page that crashed the game when clicking unmute. That
+                                should be fixed now, sorry. More bug fixes and improvements to come.
+
+                                <br /><br />
+                                -Isaac<br/>
+                                7/27/2022
+                            </PatchNotesText>
+
+                            <AsciiArtText rainbow={true}>
+                                <br />
+                                , ; ,   .-'"""'-.   , ; ,<br/>
+                                \\|/  .'         '.  \|//<br/>
+                                \-;-/   ()   ()   \-;-/<br/>
+                                // ;               ; \\<br/>
+                                //__; :.         .; ;__\\<br/>
+                                `-----\'.'-.....-'.'/-----'<br/>
+                                '.'.-.-,_.'.'<br/>
+                                '(  (..-'<br/>
+                                '-'
+                            </AsciiArtText>
+                        </PatchNotesPanel>
+
+                        <Button variant={'outline-light'} onClick={() => {
+                            setShowPatchNotesPanel(false);
+                            handleUnmute();
+                        }}>
+                            Close (and unmute)
+                        </Button>
                     </EmailPanel>
                 </MuteScreen>
             }

@@ -70,6 +70,11 @@ const approveCategory = (category) => {
 
     for (let i = 0; i < NUM_CLUES; i++) {
         const clue = category.clues[i];
+
+        if (!clue) {
+            return false;
+        }
+
         const rawQuestion = formatRaw(clue.question);
 
         const isValid = rawQuestion.length > 0 && clue.invalid_count === null;
