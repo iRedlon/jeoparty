@@ -28,10 +28,10 @@ const MuteScreen = styled.div`
     ${mixins.flexAlignCenter};
     position: absolute;
     z-index: 3;
-    
+
     height: 100vh;
     width: 100vw;
-    
+
     backdrop-filter: blur(8px);
 `;
 
@@ -39,7 +39,7 @@ const MuteScreenText = styled.div`
     ${mixins.flexAlignCenter};
     position: absolute;
     z-index: 2;
-    
+
     left: 50%;
     top: 50%;
     transform: translate(-50%,-50%);
@@ -83,7 +83,7 @@ const EmailPanelCancelButton = styled.div`
 const PatchNotesPanel = styled.div`
     background-color: white;
     color: black;
-  
+
     margin: 1em;
     padding: 1em;
 `;
@@ -129,18 +129,18 @@ const JoinText = styled(InfoText)`
 
     padding-left: 28vw;
     padding-right: 28vw;
-    
+
     &:before, :after {
         content: '';
         flex: 1 1;
         border-bottom: 0.075em solid;
         margin: auto;
     }
-    
+
     &:before {
         margin-right: 0.75em;
     }
-    
+
     &:after {
         margin-left: 0.75em;
     }
@@ -158,7 +158,7 @@ const InfoHeading = styled.h1`
 `;
 
 const SessionNameText = styled.h1`
-    font-family: board, serif; 
+    font-family: board, serif;
     font-size: 15vh;
     color: #d69f4c;
     text-shadow: 0.075em 0.075em #000;
@@ -213,7 +213,7 @@ const BrowserLobby = () => {
     const [activePlayers, setActivePlayers] = useState(debug ? 10 : 0);
     const [mute, setMute] = useState(true);
 
-    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(true);
+    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(false);
     const [showEmailPanel, setShowEmailPanel] = useState(false);
 
     const socket = useContext(SocketContext);
