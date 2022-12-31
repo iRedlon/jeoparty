@@ -3,6 +3,10 @@ const path = require('path');
 const express = require('express');
 const cookie = require('cookie');
 const randomWords = require('random-words');
+
+const Airbrake = require('@airbrake/node');
+const airbrakeExpress = require('@airbrake/node/dist/instrumentation/express');
+
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
@@ -16,6 +20,7 @@ const Player = require('../constants/Player').Player;
 const GameSession = require('../constants/GameSession').GameSession;
 const GameState = require('../constants/GameState').GameState;
 
+const api = require('../constants/api').api;
 const timers = require('../constants/timers').timers;
 const titles = require('../constants/titles').titles;
 const getRandomCategories = require('../helpers/jservice').getRandomCategories;
@@ -26,6 +31,11 @@ const formatWager = require('../helpers/format').formatWager;
 const getLeaderboard = require('../helpers/db').getLeaderboard;
 // const resetLeaderboard = require('../helpers/db').resetLeaderboard;
 const updateLeaderboard = require('../helpers/db').updateLeaderboard;
+
+const airbrake = new Airbrake.Notifier({
+    projectId: process.env.AIRBRAKE_PROJECT_ID || api.AIRBRAKE_PROJECT_ID,
+    projectKey: process.env.AIRBRAKE_PROJECT_KEY || api.AIRBRAKE_PROJECT_KEY,
+});
 
 const NUM_CATEGORIES = 6;
 const NUM_CLUES = 5;
@@ -40,8 +50,10 @@ let activePlayers = 0;
 //     }
 // });
 
+app.use(airbrakeExpress.makeMiddleware(airbrake));
 app.use(express.static(path.join(__dirname, '../../build')));
 app.get('/', (req, res, next) => res.sendFile(__dirname + './index.html'));
+app.use(airbrakeExpress.makeErrorHandler(airbrake));
 
 // Session cache helpers
 
@@ -822,6 +834,14 @@ const showPodium = (sessionName, championOverride) => {
 };
 
 io.on('connection', (socket) => {
+    airbrake.addFilter((notice) => {
+        if (socket.sessionName) {
+            notice.params = { session: sessionCache.get(socket.sessionName) };
+        }
+
+        return notice;
+    });
+
     socket.emit('connect_device');
 
     socket.on('connect_device', async (isMobile) => {

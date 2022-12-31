@@ -1,10 +1,11 @@
 const _ = require('lodash');
 const { MongoClient } = require('mongodb');
 
+const api = require('../constants/api').api;
+
 // const samplePlayers = require('../constants/samplePlayers').samplePlayers;
 
-const url = 'mongodb+srv://admin:lEs45HnBK0EUwy2h@jeoparty.xssla.mongodb.net/leaderboard?retryWrites=true&w=majority';
-const client = new MongoClient(url);
+const client = new MongoClient(api.MONGO_DB_URL);
 const connection = client.connect();
 
 exports.resetLeaderboard = async (colName) => {
