@@ -20,7 +20,6 @@ const Player = require('../constants/Player').Player;
 const GameSession = require('../constants/GameSession').GameSession;
 const GameState = require('../constants/GameState').GameState;
 
-const api = require('../constants/api').api;
 const timers = require('../constants/timers').timers;
 const titles = require('../constants/titles').titles;
 const getRandomCategories = require('../helpers/jservice').getRandomCategories;
@@ -33,8 +32,8 @@ const getLeaderboard = require('../helpers/db').getLeaderboard;
 const updateLeaderboard = require('../helpers/db').updateLeaderboard;
 
 const airbrake = new Airbrake.Notifier({
-    projectId: process.env.AIRBRAKE_PROJECT_ID || api.AIRBRAKE_PROJECT_ID,
-    projectKey: process.env.AIRBRAKE_PROJECT_KEY || api.AIRBRAKE_PROJECT_KEY,
+    projectId: process.env.AIRBRAKE_PROJECT_ID,
+    projectKey: process.env.AIRBRAKE_PROJECT_KEY,
 });
 
 const NUM_CATEGORIES = 6;

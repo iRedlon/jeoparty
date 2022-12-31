@@ -1,11 +1,9 @@
 const _ = require('lodash');
 const { MongoClient } = require('mongodb');
 
-const api = require('../constants/api').api;
-
 // const samplePlayers = require('../constants/samplePlayers').samplePlayers;
 
-const client = new MongoClient(api.MONGO_DB_URL);
+const client = new MongoClient(process.env.MONGO_DB_URL);
 const connection = client.connect();
 
 exports.resetLeaderboard = async (colName) => {
