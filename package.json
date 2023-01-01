@@ -28,7 +28,7 @@
     "react-device-detect": "1.15.0",
     "react-dom": "17.0.1",
     "react-icons": "4.2.0",
-    "react-scripts": "4.0.3",
+    "react-scripts": "^5.0.1",
     "remove-accents": "0.4.2",
     "socket.io": "4.5.4",
     "socket.io-client": "3.1.3",
@@ -36,15 +36,15 @@
     "web-vitals": "1.0.1",
     "words-to-numbers": "1.5.1"
   },
-  "optionalDependencies": { 
+  "optionalDependencies": {
     "fsevents": "2.1.2"
   },
   "scripts": {
-    "build": "react-scripts --openssl-legacy-provider build",
+    "build": "react-scripts build",
     "dev": "node ./src/server/index.js",
-    "debug": "react-scripts --openssl-legacy-provider start",
+    "debug": "react-scripts start",
     "test": "mocha",
-    "eject": "react-scripts --openssl-legacy-provider eject"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
