@@ -20,6 +20,7 @@ const Player = require('../constants/Player').Player;
 const GameSession = require('../constants/GameSession').GameSession;
 const GameState = require('../constants/GameState').GameState;
 
+// const api = require('../constants/api').api;
 const timers = require('../constants/timers').timers;
 const titles = require('../constants/titles').titles;
 const getRandomCategories = require('../helpers/jservice').getRandomCategories;
@@ -33,8 +34,12 @@ const updateLeaderboard = require('../helpers/db').updateLeaderboard;
 
 const airbrake = new Airbrake.Notifier({
     projectId: process.env.AIRBRAKE_PROJECT_ID,
-    projectKey: process.env.AIRBRAKE_PROJECT_KEY,
+    projectKey: process.env.AIRBRAKE_PROJECT_KEY
 });
+// const airbrake = new Airbrake.Notifier({
+//     projectId: api.AIRBRAKE_PROJECT_ID,
+//     projectKey: api.AIRBRAKE_PROJECT_KEY
+// });
 
 const NUM_CATEGORIES = 6;
 const NUM_CLUES = 5;
@@ -870,6 +875,8 @@ io.on('connection', (socket) => {
                 updateGameSession(socket.sessionName, 'categories', categories);
                 updateGameSession(socket.sessionName, 'doubleJeopartyCategories', doubleJeopartyCategories);
                 updateGameSession(socket.sessionName, 'finalJeopartyClue', finalJeopartyClue);
+
+                socket.emit('categories_loaded', true);
             });
         }
     });

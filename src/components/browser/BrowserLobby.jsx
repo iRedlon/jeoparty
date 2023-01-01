@@ -209,6 +209,7 @@ const BrowserLobby = () => {
 
     const [players, setPlayers] = useState(debug ? sortByJoinIndex(samplePlayers) : []);
     const [sessionName, setSessionName] = useState(debug ? 'TEST' : '');
+    const [categoriesLoaded, setCategoriesLoaded] = useState(false);
     const [leaderboard, setLeaderboard] = useState(debug ? sampleLeaderboard : []);
     const [activePlayers, setActivePlayers] = useState(debug ? 10 : 0);
     const [mute, setMute] = useState(true);
@@ -227,6 +228,10 @@ const BrowserLobby = () => {
 
         socket.on('active_players', (activePlayers) => {
             setActivePlayers(activePlayers);
+        });
+
+        socket.on('categories_loaded', (categoriesLoaded) => {
+            setCategoriesLoaded(categoriesLoaded);
         });
 
         socket.on('leaderboard', (leaderboard) => {
@@ -440,7 +445,12 @@ const BrowserLobby = () => {
                 </InfoRow>
 
                 <StartGameInputGroup className={'mb-3 justify-content-center'}>
-                    {!mute && <StartGameButton onClick={() => handleStartGame()} variant={'outline-light'}>START GAME</StartGameButton>}
+                    {
+                        !mute && (
+                            categoriesLoaded ? <StartGameButton onClick={() => handleStartGame()} variant={'outline-light'}>START GAME</StartGameButton>
+                                             : <StartGameButton variant={'outline-light'} disabled={true}>CATEGORIES LOADING...</StartGameButton>
+                        )
+                    }
                 </StartGameInputGroup>
 
                 <ButtonWrapper>
@@ -453,9 +463,9 @@ const BrowserLobby = () => {
                     </InfoButtonWrapper>
                 </ButtonWrapper>
 
-                {/*<ActivePlayersText>*/}
-                {/*    {activePlayers} active players*/}
-                {/*</ActivePlayersText>*/}
+                <ActivePlayersText>
+                   {activePlayers} active players
+                </ActivePlayersText>
             </Container>
         </div>
     );
