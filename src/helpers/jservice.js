@@ -43,7 +43,7 @@ const getDailyDoubleIndices = () => {
     return [categoryIndex, clueIndex, djCategoryIndex1, djClueIndex1, djCategoryIndex2, djClueIndex2];
 };
 
-const getRandomCategory = (cb) => {
+const getRandomCategory = (decade, cb) => {
     const categoryId = Math.floor(Math.random() * MAX_CATEGORY_ID) + 1;
 
     js.category(categoryId, (error, response, category) => {
@@ -52,7 +52,7 @@ const getRandomCategory = (cb) => {
             const startingIndex = Math.round((Math.random() * (cluesCount - 5)) / 5) * 5;
             category.clues = category.clues.slice(startingIndex, startingIndex + 5);
 
-            if (approveCategory(category)) {
+            if (approveCategory(category, decade)) {
                 cb(error, formatCategory(category));
             } else {
                 cb(true, category);
@@ -64,7 +64,7 @@ const getRandomCategory = (cb) => {
     });
 };
 
-const approveCategory = (category) => {
+const approveCategory = (category, decade) => {
     const rawCategoryTitle = formatRaw(category.title);
     const isMediaCategory = rawCategoryTitle.includes('logo') || rawCategoryTitle.includes('video');
 
@@ -75,6 +75,7 @@ const approveCategory = (category) => {
             return false;
         }
 
+        const year = parseInt(clue.airdate.slice(0, 4));
         const rawQuestion = formatRaw(clue.question);
 
         const isValid = rawQuestion.length > 0 && clue.invalid_count === null;
@@ -83,8 +84,9 @@ const approveCategory = (category) => {
             rawQuestion.includes('picturedhere') ||
             rawQuestion.includes('heardhere') ||
             rawQuestion.includes('video');
+        const isDecade = year >= decade;
 
-        if (!isValid || isMediaQuestion) {
+        if (!isValid || isMediaQuestion || !isDecade) {
             return false;
         }
 
@@ -98,14 +100,14 @@ const approveCategory = (category) => {
     return !isMediaCategory;
 };
 
-exports.getRandomCategories = (cb) => {
+exports.getRandomCategories = (decade, cb) => {
     let categories = [];
     let doubleJeopartyCategories = [];
     let finalJeopartyClue = {};
     let usedCategoryIds = [];
 
     const recursiveGetRandomCategory = () => {
-        getRandomCategory((error, category) => {
+        getRandomCategory(decade, (error, category) => {
             if (error || usedCategoryIds.includes(category.id)) {
                 recursiveGetRandomCategory();
             } else {

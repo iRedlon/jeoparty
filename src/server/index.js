@@ -41,6 +41,7 @@ const airbrake = new Airbrake.Notifier({
 //     projectKey: api.AIRBRAKE_PROJECT_KEY
 // });
 
+const STARTING_DECADE = 2000;
 const NUM_CATEGORIES = 6;
 const NUM_CLUES = 5;
 
@@ -132,6 +133,24 @@ const updatePlayer = (sessionName, socketId, key, value) => {
 
         gameSession.players = players;
         sessionCache.put(sessionName, gameSession);
+    }
+};
+
+const handleRandomCategoriesResults = (sessionName, decade, categories, doubleJeopartyCategories, finalJeopartyClue) => {
+    if (!sessionCache.get(sessionName)) {
+        return;
+    }
+
+    const gameSession = sessionCache.get(sessionName);
+
+    // Prevent a completed old request from overwriting a more recent request for new categories
+    if (decade === gameSession.decade) {
+        updateGameSession(sessionName, 'categories', categories);
+        updateGameSession(sessionName, 'doubleJeopartyCategories', doubleJeopartyCategories);
+        updateGameSession(sessionName, 'finalJeopartyClue', finalJeopartyClue);
+
+        updateGameSession(sessionName, 'categoriesLoaded', true);
+        gameSession.browserClient.emit('categories_loaded', true);
     }
 };
 
@@ -871,12 +890,8 @@ io.on('connection', (socket) => {
                 socket.emit('leaderboard', leaderboard);
             });
 
-            getRandomCategories((categories, doubleJeopartyCategories, finalJeopartyClue) => {
-                updateGameSession(socket.sessionName, 'categories', categories);
-                updateGameSession(socket.sessionName, 'doubleJeopartyCategories', doubleJeopartyCategories);
-                updateGameSession(socket.sessionName, 'finalJeopartyClue', finalJeopartyClue);
-
-                socket.emit('categories_loaded', true);
+            getRandomCategories(STARTING_DECADE, (categories, doubleJeopartyCategories, finalJeopartyClue) => {
+                handleRandomCategoriesResults(sessionName, STARTING_DECADE, categories, doubleJeopartyCategories, finalJeopartyClue);
             });
         }
     });
@@ -925,6 +940,23 @@ io.on('connection', (socket) => {
             io.emit('active_players', activePlayers);
         } else {
             socket.emit('submit_signature_failure', checkPlayerMessage);
+        }
+    });
+
+    socket.on('decade', (decade) => {
+        if (!sessionCache.get(socket.sessionName)) {
+            return;
+        }
+
+        const gameSession = sessionCache.get(socket.sessionName);
+
+        if (gameSession.categoriesLoaded) {
+            updateGameSession(socket.sessionName, 'decade', decade);
+            updateGameSession(socket.sessionName, 'categoriesLoaded', false);
+
+            getRandomCategories(decade, (categories, doubleJeopartyCategories, finalJeopartyClue) => {
+                handleRandomCategoriesResults(socket.sessionName, decade, categories, doubleJeopartyCategories, finalJeopartyClue);
+            });
         }
     });
 

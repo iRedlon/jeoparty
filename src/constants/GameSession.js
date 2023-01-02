@@ -10,6 +10,8 @@ function GameSession() {
     this.boardRevealed = false;
     this.finalJeopartyDecisionIndex = 0;
 
+    this.decade = 2000;
+    this.categoriesLoaded = false;
     this.categories = [];
     this.doubleJeopartyCategories = [];
     this.finalJeopartyClue = {};

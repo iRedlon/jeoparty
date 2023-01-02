@@ -8,6 +8,8 @@ import Col from 'react-bootstrap/Col';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import Dropdown from 'react-bootstrap/Dropdown';
+import SplitButton from 'react-bootstrap/SplitButton';
 import { AiOutlineInfoCircle, AiOutlineMail } from 'react-icons/ai';
 import { ImCancelCircle } from 'react-icons/im';
 
@@ -170,6 +172,13 @@ const StartGameInputGroup = styled(InputGroup)`
     left: 50%;
     -webkit-transform: translateX(-50%);
     transform: translateX(-50%);
+
+    font-family: clue, serif;
+    font-size: 3vh;
+`;
+
+const DecadeDropdown = styled(SplitButton)`
+    padding-right: 1em;
 `;
 
 const StartGameButton = styled(Button)`
@@ -209,6 +218,7 @@ const BrowserLobby = () => {
 
     const [players, setPlayers] = useState(debug ? sortByJoinIndex(samplePlayers) : []);
     const [sessionName, setSessionName] = useState(debug ? 'TEST' : '');
+    const [decade, setDecade] = useState(2000);
     const [categoriesLoaded, setCategoriesLoaded] = useState(false);
     const [leaderboard, setLeaderboard] = useState(debug ? sampleLeaderboard : []);
     const [activePlayers, setActivePlayers] = useState(debug ? 10 : 0);
@@ -277,6 +287,15 @@ const BrowserLobby = () => {
         socket.emit('unmute');
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleDecadeDropdownSelect = useCallback((e) => {
+        setDecade(e);
+        setCategoriesLoaded(false);
+
+        socket.emit('decade', e);
+
+         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleStartGame = useCallback(() => {
@@ -445,6 +464,24 @@ const BrowserLobby = () => {
                 </InfoRow>
 
                 <StartGameInputGroup className={'mb-3 justify-content-center'}>
+                    {
+                        categoriesLoaded && (
+                            <DecadeDropdown
+                                id={`dropdown-split-variants-outline-light`}
+                                variant={'outline-light'}
+                                title={`CLUE DECADE: ${decade}+`}
+                                onSelect={handleDecadeDropdownSelect}
+                                value={decade}
+                            >
+                                <Dropdown.Item eventKey={1980} value={1980} active={decade === 1980}>1980+</Dropdown.Item>
+                                <Dropdown.Item eventKey={1990} value={1990} active={decade === 1990}>1990+</Dropdown.Item>
+                                <Dropdown.Item eventKey={2000} value={2000} active={decade === 2000}>2000+</Dropdown.Item>
+                                <Dropdown.Item eventKey={2010} value={2010} active={decade === 2010}>2010+</Dropdown.Item>
+                            </DecadeDropdown>
+                        )
+                    }
+                    
+
                     {
                         !mute && (
                             categoriesLoaded ? <StartGameButton onClick={() => handleStartGame()} variant={'outline-light'}>START GAME</StartGameButton>
