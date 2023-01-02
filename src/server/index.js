@@ -369,7 +369,7 @@ const checkBoardCompletion = (sessionName) => {
 
     for (let i = 0; i < NUM_CATEGORIES; i++) {
         for (let j = 0; j < NUM_CLUES; j++) {
-            const clue = gameSession.categories[i].clues[j];
+            const clue = _.get(gameSession, `categories[${i}].clues[${j}]`, {});
 
             if (!clue.completed) {
                 updateGameSession(sessionName, 'categoryIndex', null);
@@ -541,7 +541,7 @@ const showClue = (sessionName, sayClueText) => {
     }
 
     const gameSession = sessionCache.get(sessionName);
-    const clue = gameSession.finalJeoparty ? gameSession.finalJeopartyClue : gameSession.categories[gameSession.categoryIndex].clues[gameSession.clueIndex];
+    const clue = gameSession.finalJeoparty ? gameSession.finalJeopartyClue : _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[${gameSession.clueIndex}]`, {});
 
     gameSession.clients.map((client) => {
         client.emit('set_game_state', GameState.CLUE, () => {
@@ -565,9 +565,9 @@ const buzzIn = (socket) => {
     if (gameSession.buzzInTimeout) {
         updateGameSession(socket.sessionName, 'buzzInTimeout', false);
 
-        const clue = gameSession.finalJeoparty ? gameSession.finalJeopartyClue : gameSession.categories[gameSession.categoryIndex].clues[gameSession.clueIndex];
-        const categoryName = gameSession.finalJeoparty ? gameSession.finalJeopartyClue.categoryName : gameSession.categories[gameSession.categoryIndex].title;
-        const categoryYear = gameSession.finalJeoparty ? gameSession.finalJeopartyClue.year.toString() : gameSession.categories[gameSession.categoryIndex].clues[0].airdate.slice(0, 4);
+        const clue = gameSession.finalJeoparty ? gameSession.finalJeopartyClue : _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[${gameSession.clueIndex}]`, {});
+        const categoryName = gameSession.finalJeoparty ? gameSession.finalJeopartyClue.categoryName : _.get(gameSession, `categories[${gameSession.categoryIndex}].title`, '');
+        const categoryYear = gameSession.finalJeoparty ? gameSession.finalJeopartyClue.year.toString() : _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[0].airdate`, '').slice(0, 4);
         const dollarValue = clue.dailyDouble ? _.get(gameSession, `players[${socket.id}].wager`, 0) : (gameSession.doubleJeoparty ? 400 : 200) * (gameSession.clueIndex + 1);
 
         const currentAnswersSubmitted = _.keys(_.values(gameSession.players).filter((player) => {
@@ -649,8 +649,8 @@ const submitAnswer = (socket, answer, timeout) => {
         return;
     }
 
-    const categoryName = gameSession.finalJeoparty ? gameSession.finalJeopartyClue.categoryName : gameSession.categories[gameSession.categoryIndex].title;
-    const clue = gameSession.finalJeoparty ? gameSession.finalJeopartyClue : gameSession.categories[gameSession.categoryIndex].clues[gameSession.clueIndex];
+    const categoryName = gameSession.finalJeoparty ? gameSession.finalJeopartyClue.categoryName :_.get(gameSession, `categories[${gameSession.categoryIndex}].title`, '');
+    const clue = gameSession.finalJeoparty ? gameSession.finalJeopartyClue : _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[${gameSession.clueIndex}]`, {});
 
     const isCorrect = checkAnswer(categoryName, clue.question, clue.answer, answer);
     const dollarValue = clue.dailyDouble || gameSession.finalJeoparty ? _.get(gameSession, `players[${socket.id}].wager`, 0) : (gameSession.doubleJeoparty ? 400 : 200) * (gameSession.clueIndex + 1);
@@ -961,9 +961,9 @@ io.on('connection', (socket) => {
         updateGameSession(socket.sessionName, 'clueIndex', clueIndex);
 
         const gameSession = sessionCache.get(socket.sessionName);
-        const categoryName = gameSession.categories[categoryIndex].title;
+        const categoryName = _.get(gameSession, `categories[${gameSession.categoryIndex}].title`, '');
         const dollarValue = (gameSession.doubleJeoparty ? 400 : 200) * (gameSession.clueIndex + 1);
-        const clue = gameSession.categories[categoryIndex].clues[clueIndex];
+        const clue = _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[${gameSession.clueIndex}]`, {});
 
         gameSession.browserClient.emit('request_clue', categoryIndex, clueIndex, clue.dailyDouble);
         gameSession.browserClient.emit('say_clue_request', categoryName, dollarValue, clue.dailyDouble);
@@ -978,7 +978,7 @@ io.on('connection', (socket) => {
         }
 
         const gameSession = sessionCache.get(socket.sessionName);
-        const clue = gameSession.categories[gameSession.categoryIndex].clues[gameSession.clueIndex]
+        const clue = _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[${gameSession.clueIndex}]`, {});
 
         if (clue.dailyDouble) {
             setTimeout(() => {
@@ -1114,7 +1114,7 @@ io.on('connection', (socket) => {
         if (gameSession.finalJeoparty) {
             showFinalJeopartyDecision(socket.sessionName);
         } else {
-            const clue = gameSession.categories[gameSession.categoryIndex].clues[gameSession.clueIndex];
+            const clue = _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[${gameSession.clueIndex}]`, {});
 
             if (isCorrect) {
                 const newBoardController = getClient(socket.sessionName, gameSession.playersAnswered[gameSession.playersAnswered.length - 1]);
