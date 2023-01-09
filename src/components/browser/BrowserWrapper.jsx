@@ -23,8 +23,13 @@ const BrowserWrapper = (props) => {
             }
         });
 
+        socket.on('alert', (message) => {
+            alert(message);
+        });
+
         return () => {
             socket.off('board_revealed');
+            socket.off('alert');
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

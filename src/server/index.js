@@ -136,12 +136,17 @@ const updatePlayer = (sessionName, socketId, key, value) => {
     }
 };
 
-const handleRandomCategoriesResults = (sessionName, decade, categories, doubleJeopartyCategories, finalJeopartyClue) => {
+const handleRandomCategoriesResults = (sessionName, decade, categories, doubleJeopartyCategories, finalJeopartyClue, error) => {
     if (!sessionCache.get(sessionName)) {
         return;
     }
 
     const gameSession = sessionCache.get(sessionName);
+
+    if (error) {
+        gameSession.browserClient.emit('alert', `The database that powers Jeoparty! (jservice.io) has a request limit, and we reached it! Try again in one minute. (Use decade selection at your own risk)`);
+        return;
+    }
 
     // Prevent a completed old request from overwriting a more recent request for new categories
     if (decade === gameSession.decade) {
@@ -890,8 +895,8 @@ io.on('connection', (socket) => {
                 socket.emit('leaderboard', leaderboard);
             });
 
-            getRandomCategories(STARTING_DECADE, (categories, doubleJeopartyCategories, finalJeopartyClue) => {
-                handleRandomCategoriesResults(sessionName, STARTING_DECADE, categories, doubleJeopartyCategories, finalJeopartyClue);
+            getRandomCategories(STARTING_DECADE, (categories, doubleJeopartyCategories, finalJeopartyClue, error) => {
+                handleRandomCategoriesResults(sessionName, STARTING_DECADE, categories, doubleJeopartyCategories, finalJeopartyClue, error);
             });
         }
     });

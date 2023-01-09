@@ -1,4 +1,5 @@
-const js = require('jservice-node');
+const request = require('request');
+const qs = require('query-string');
 const _ = require('lodash');
 
 const formatRaw = require('./format').formatRaw;
@@ -9,6 +10,34 @@ const finalJeopartyClues = require('../constants/finalJeopartyClues.js').finalJe
 const MAX_CATEGORY_ID = 18418;
 const NUM_CATEGORIES = 6;
 const NUM_CLUES = 5;
+
+class jServiceApi{
+	constructor() {
+		this._url = 'http://jservice.io/api/'
+	}
+
+	_makeRequest(url, callback) {
+		url = this._url + url;
+		request(url, function(err, response, json) {
+            const parsedJson = response.statusCode == 200 ? JSON.parse(json) : undefined;
+            callback(err, response, parsedJson);
+		});
+	}
+
+    category(id, callback) {
+		const url = 'category?' + qs.stringify({'id' : id});
+		this._makeRequest(url, callback);
+	}
+
+	random(count, callback) {
+		count = count || 100;
+		count = count > 100 ? 100 : count;
+		const url = 'random?' + qs.stringify({'count' : count});
+		this._makeRequest(url, callback);
+	}
+}
+
+const js = new jServiceApi();
 
 const choice = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -53,13 +82,13 @@ const getRandomCategory = (decade, cb) => {
             category.clues = category.clues.slice(startingIndex, startingIndex + 5);
 
             if (approveCategory(category, decade)) {
-                cb(error, formatCategory(category));
+                cb(false, formatCategory(category));
             } else {
-                cb(true, category);
+                cb(false, { categoryId: categoryId });
             }
         } else {
             console.log(`Error: ${response.statusCode}`);
-            cb(true, category);
+            cb(true, { categoryId: categoryId });
         }
     });
 };
@@ -108,7 +137,9 @@ exports.getRandomCategories = (decade, cb) => {
 
     const recursiveGetRandomCategory = () => {
         getRandomCategory(decade, (error, category) => {
-            if (error || usedCategoryIds.includes(category.id)) {
+            if (error) {
+                cb(categories, doubleJeopartyCategories, finalJeopartyClue, true);
+            } else if (!category || usedCategoryIds.includes(category.id)) {
                 recursiveGetRandomCategory();
             } else {
                 if (categories.length < NUM_CATEGORIES) {
@@ -133,7 +164,7 @@ exports.getRandomCategories = (decade, cb) => {
                     // const dollarValue = 200 * (clueIndex + 1);
                     // console.log(`Daily double is '${categoryName} for $${dollarValue}'`);
 
-                    cb(categories, doubleJeopartyCategories, finalJeopartyClue);
+                    cb(categories, doubleJeopartyCategories, finalJeopartyClue, false);
                 } else {
                     recursiveGetRandomCategory();
                 }

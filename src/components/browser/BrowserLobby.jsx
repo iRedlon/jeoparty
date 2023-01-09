@@ -464,12 +464,12 @@ const BrowserLobby = () => {
                 </InfoRow>
 
                 <StartGameInputGroup className={'mb-3 justify-content-center'}>
-                    {
+                    {/* {
                         categoriesLoaded && (
                             <DecadeDropdown
                                 id={`dropdown-split-variants-outline-light`}
                                 variant={'outline-light'}
-                                title={`CLUE DECADE: ${decade}+`}
+                                title={`CLUE DECADES: ${decade}+`}
                                 onSelect={handleDecadeDropdownSelect}
                                 value={decade}
                             >
@@ -479,7 +479,7 @@ const BrowserLobby = () => {
                                 <Dropdown.Item eventKey={2010} value={2010} active={decade === 2010}>2010+</Dropdown.Item>
                             </DecadeDropdown>
                         )
-                    }
+                    } */}
                     
 
                     {
