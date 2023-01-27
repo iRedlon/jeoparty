@@ -129,6 +129,23 @@ const approveCategory = (category, decade) => {
     return !isMediaCategory;
 };
 
+const approveGame = (categories, doubleJeopartyCategories, finalJeopartyClue) => {
+    if (categories.length != NUM_CATEGORIES || doubleJeopartyCategories.length != NUM_CATEGORIES || !_.get(finalJeopartyClue, 'question')) {
+        return false;
+    }
+
+    for (let i = 0; i < NUM_CLUES; i++) {
+        let category = categories[i];
+        let doubleJeopartyCategory = doubleJeopartyCategories[i];
+
+        if (!category || category.clues.length != NUM_CLUES || !doubleJeopartyCategory || doubleJeopartyCategory.clues.length != NUM_CLUES) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
 exports.getRandomCategories = (decade, cb) => {
     let categories = [];
     let doubleJeopartyCategories = [];
@@ -139,7 +156,7 @@ exports.getRandomCategories = (decade, cb) => {
         getRandomCategory(decade, (error, category) => {
             if (error) {
                 cb(categories, doubleJeopartyCategories, finalJeopartyClue, true);
-            } else if (!category || usedCategoryIds.includes(category.id)) {
+            } else if (!category || usedCategoryIds.includes(category.id) || !category.clues || category.clues.length != NUM_CLUES) {
                 recursiveGetRandomCategory();
             } else {
                 if (categories.length < NUM_CATEGORIES) {
@@ -153,7 +170,7 @@ exports.getRandomCategories = (decade, cb) => {
 
                 usedCategoryIds.push(category.id);
 
-                if (_.get(finalJeopartyClue, 'categoryName')) {
+                if (approveGame(categories, doubleJeopartyCategories, finalJeopartyClue)) {
                     const [categoryIndex, clueIndex, djCategoryIndex1, djClueIndex1, djCategoryIndex2, djClueIndex2] = getDailyDoubleIndices();
                     categories[categoryIndex].clues[clueIndex].dailyDouble = true;
                     doubleJeopartyCategories[djCategoryIndex1].clues[djClueIndex1].dailyDouble = true;
