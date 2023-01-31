@@ -106,7 +106,7 @@ const addLeader = async (player) => {
 
         const db = client.db('leaderboard');
 
-        for (const colName of ['allTime']) {
+        for (const colName of ['week', 'month', 'allTime']) {
             const leaderboardCol = db.collection(colName);
             const leaderboard = await leaderboardCol.find({}).toArray();
 
