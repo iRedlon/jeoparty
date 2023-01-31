@@ -883,7 +883,7 @@ io.on('connection', (socket) => {
             updateClients(sessionName, socket);
 
             socket.emit('session_name', sessionName);
-            socket.emit('active_players', _.keys(sessionCache).length);
+            socket.emit('active_players', sessionCache.keys().length - 1);
 
             handleLeaderboardReset().then(() => {
                 getLeaderboards().then((leaderboards) => {
