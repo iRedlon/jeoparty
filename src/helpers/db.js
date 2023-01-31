@@ -8,6 +8,63 @@ const client = new MongoClient(process.env.MONGO_DB_URL);
 // const client = new MongoClient(api.MONGO_DB_URL);
 const connection = client.connect();
 
+
+exports.handleLeaderboardReset = async () => {
+    try {
+        await connection;
+
+        const db = client.db('leaderboard');
+        const resetDataCol = db.collection('resetData');
+        const resetData = await resetDataCol.findOne();
+
+        const weekStartTime = resetData.weekStartTime || 1;
+        const monthStartTime = resetData.monthStartTime || 1;
+
+        // console.log(weekStartTime);
+        // console.log(monthStartTime);
+
+        if (weekStartTime && monthStartTime) {
+            // Check for weekly reset
+            let prevMonday = new Date();
+            prevMonday.setDate(prevMonday.getDate() - (prevMonday.getDay() + 6) % 7);
+            prevMonday.setHours(9, 0, 0);
+
+            if (prevMonday.getTime() > weekStartTime) {
+                // console.log('resetting weekly leaderboard');
+
+                await this.resetLeaderboard('week');
+
+                await resetDataCol.findOneAndUpdate({}, {
+                    '$set': {
+                        'weekStartTime': prevMonday.getTime()
+                    }
+                });
+            }
+
+            // =======================
+            // Check for monthly reset
+            let now = new Date();
+
+            let firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            firstDayOfCurrentMonth.setHours(9, 0, 0);
+
+            if (firstDayOfCurrentMonth.getTime() > monthStartTime) {
+                // console.log('resetting monthly leaderboard');
+
+                await this.resetLeaderboard('month');
+
+                await resetDataCol.findOneAndUpdate({}, {
+                    '$set': {
+                        'monthStartTime': firstDayOfCurrentMonth.getTime()
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.log(err.stack);
+    }
+}
+
 exports.resetLeaderboard = async (colName) => {
     try {
         await connection;
@@ -27,14 +84,17 @@ exports.resetLeaderboard = async (colName) => {
     }
 }
 
-exports.getLeaderboard = async () => {
+exports.getLeaderboards = async () => {
     try {
         await connection;
 
         const db = client.db('leaderboard');
-        const leaderboardCol = db.collection('allTime');
 
-        return await leaderboardCol.find({}).toArray();
+        const allTimeLeaderboard = await db.collection('allTime').find({}).toArray();
+        const monthLeaderboard = await db.collection('month').find({}).toArray();
+        const weekLeaderboard = await db.collection('week').find({}).toArray();
+
+        return { 'allTime': allTimeLeaderboard, 'month': monthLeaderboard, 'week': weekLeaderboard };
     } catch (err) {
         console.log(err.stack);
     }

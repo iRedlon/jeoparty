@@ -28,7 +28,8 @@ const checkPlayerName = require('../helpers/check').checkPlayerName;
 const checkAnswer = require('../helpers/check').checkAnswer;
 const formatRaw = require('../helpers/format').formatRaw;
 const formatWager = require('../helpers/format').formatWager;
-const getLeaderboard = require('../helpers/db').getLeaderboard;
+const handleLeaderboardReset = require('../helpers/db').handleLeaderboardReset;
+const getLeaderboards = require('../helpers/db').getLeaderboards;
 // const resetLeaderboard = require('../helpers/db').resetLeaderboard;
 const updateLeaderboard = require('../helpers/db').updateLeaderboard;
 
@@ -44,8 +45,6 @@ const airbrake = new Airbrake.Notifier({
 const STARTING_DECADE = 2000;
 const NUM_CATEGORIES = 6;
 const NUM_CLUES = 5;
-
-let activePlayers = 0;
 
 // app.use((req, res, next) => {
 //     if (req.header('x-forwarded-proto') !== 'https') {
@@ -144,7 +143,7 @@ const handleRandomCategoriesResults = (sessionName, decade, categories, doubleJe
     const gameSession = sessionCache.get(sessionName);
 
     if (error) {
-        gameSession.browserClient.emit('alert', `The database that powers Jeoparty! (jservice.io) has a request limit, and we reached it! Try again in one minute. (Use decade selection at your own risk)`);
+        gameSession.browserClient.emit('alert', `The database that powers Jeoparty! (jservice.io) has a request limit, and we reached it! Try again in one minute.`);
         return;
     }
 
@@ -268,9 +267,6 @@ const handleBrowserDisconnection = (sessionName) => {
 
     const gameSession = sessionCache.get(sessionName);
 
-    activePlayers -= _.keys(gameSession.players).length;
-    io.emit('active_players', activePlayers);
-
     gameSession.clients.map((client) => {
         client.emit('reload');
     });
@@ -311,9 +307,6 @@ const handlePlayerDisconnection = (sessionName, socket) => {
 
         gameSession.players = players;
         sessionCache.put(sessionName, gameSession);
-
-        activePlayers--;
-        io.emit('active_players', activePlayers);
 
         if (gameSession.currentGameState === GameState.LOBBY) {
             gameSession.browserClient.emit('players', gameSession.players);
@@ -370,9 +363,6 @@ const handlePlayerReconnection = (socket) => {
             socket.emit('set_cookie', player);
             socket.emit('player', player);
         });
-
-        activePlayers++;
-        io.emit('active_players', activePlayers);
 
         if (gameSession.currentGameState === GameState.LOBBY) {
             gameSession.browserClient.emit('players', gameSession.players);
@@ -673,6 +663,10 @@ const submitAnswer = (socket, answer, timeout) => {
         return;
     }
 
+    if (!answer) {
+        answer = '';
+    }
+
     const categoryName = gameSession.finalJeoparty ? gameSession.finalJeopartyClue.categoryName :_.get(gameSession, `categories[${gameSession.categoryIndex}].title`, '');
     const clue = gameSession.finalJeoparty ? gameSession.finalJeopartyClue : _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[${gameSession.clueIndex}]`, {});
 
@@ -889,10 +883,12 @@ io.on('connection', (socket) => {
             updateClients(sessionName, socket);
 
             socket.emit('session_name', sessionName);
-            socket.emit('active_players', activePlayers);
+            socket.emit('active_players', _.keys(sessionCache).length);
 
-            getLeaderboard().then((leaderboard) => {
-                socket.emit('leaderboard', leaderboard);
+            handleLeaderboardReset().then(() => {
+                getLeaderboards().then((leaderboards) => {
+                    socket.emit('leaderboards', leaderboards);
+                });
             });
 
             getRandomCategories(STARTING_DECADE, (categories, doubleJeopartyCategories, finalJeopartyClue, error) => {
@@ -940,9 +936,6 @@ io.on('connection', (socket) => {
 
             socket.emit('submit_signature_success', _.get(gameSession, `players[${socket.id}]`));
             gameSession.browserClient.emit('players', gameSession.players);
-
-            activePlayers++;
-            io.emit('active_players', activePlayers);
         } else {
             socket.emit('submit_signature_failure', checkPlayerMessage);
         }

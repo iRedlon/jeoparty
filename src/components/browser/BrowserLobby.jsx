@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
 import emailjs from 'emailjs-com';
 
+import _ from 'lodash';
 import styled from 'styled-components';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -186,6 +187,14 @@ const StartGameButton = styled(Button)`
     font-size: 3vh;
 `;
 
+const LeaderboardButton = styled(Button)`
+    font-family: clue, serif;
+    font-size: 2vh;
+    margin-left: 0.25em;
+    margin-right: 0.25em;
+    margin-bottom: 0.5em;
+`;
+
 const InfoList = styled.ul`
     padding-inline-start: 0;
     list-style-type: none;
@@ -194,6 +203,7 @@ const InfoList = styled.ul`
 const LeaderboardPlayerNames = styled(Col)`
     text-align: right;
     white-space: nowrap;
+    overflow: hidden;
 `;
 
 const LeaderboardScores = styled(Col)`
@@ -220,11 +230,12 @@ const BrowserLobby = () => {
     const [sessionName, setSessionName] = useState(debug ? 'TEST' : '');
     const [decade, setDecade] = useState(2000);
     const [categoriesLoaded, setCategoriesLoaded] = useState(false);
-    const [leaderboard, setLeaderboard] = useState(debug ? sampleLeaderboard : []);
-    const [activePlayers, setActivePlayers] = useState(debug ? 10 : 0);
+    const [leaderboards, setLeaderboards] = useState(debug ? { 'allTime': sampleLeaderboard, 'month': sampleLeaderboard, 'week': sampleLeaderboard } : {});
+    const [displayLeaderboardName, setDisplayLeaderboardName] = useState('week');
+    const [activePlayers, setActivePlayers] = useState(debug ? 1 : 0);
     const [mute, setMute] = useState(true);
 
-    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(false);
+    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(true);
     const [showEmailPanel, setShowEmailPanel] = useState(false);
 
     const socket = useContext(SocketContext);
@@ -244,8 +255,8 @@ const BrowserLobby = () => {
             setCategoriesLoaded(categoriesLoaded);
         });
 
-        socket.on('leaderboard', (leaderboard) => {
-            setLeaderboard(leaderboard);
+        socket.on('leaderboards', (leaderboards) => {
+            setLeaderboards(leaderboards);
         });
 
         socket.on('unmute', () => {
@@ -331,7 +342,7 @@ const BrowserLobby = () => {
 
     return (
         <div>
-            {mute &&
+            {(mute && !showPatchNotesPanel) &&
                 <MuteScreen>
                     <MuteScreenText onClick={() => handleUnmute()}>
                         <MuteScreenButton variant={'outline-light'}>CLICK TO UNMUTE</MuteScreenButton>
@@ -376,30 +387,20 @@ const BrowserLobby = () => {
                             <h1>Update</h1>
 
                             <PatchNotesText>
-                                Sorry I haven't been updating Jeoparty! recently, I graduated college and moved.
-                                Thank you to everyone who has been reporting bugs to me via email and GitHub, please keep them coming.
-                                I'm finally working on the game again and fixing bugs. I also added this "Update" panel
-                                which I will keep posted with patch notes as they come out. The only thing I've fixed
-                                so far is a critical bug on this page that crashed the game when clicking unmute. That
-                                should be fixed now, sorry. More bug fixes and improvements to come.
+                                I've been waiting for Jeoparty! to be crash-free to work on bigger features. It looks like my most recent update helped.
+                                If you're still seeing crashes anywhere in the game PLEASE send me an email, I want the game to be in a stable state.
+                                Thank you to everyone who played even when you couldn't finish games 90% of the time.
+                                <br /><br />
+                                For now, take this new feature: monthly, weekly, and all-time leaderboards! With this change, I'm clearing the leaderboards completely.
+                                Sorry Randolph 1-10... it was a good run.
+                                <br /><br />
+                                A final note: you may have noticed that I added decade selection and removed it immediately. There are issues with the clue database. Decade
+                                selection will be back soon. For now, all categories are from the year 2000+
 
                                 <br /><br />
                                 -Isaac<br/>
-                                7/27/2022
+                                1/30/2023
                             </PatchNotesText>
-
-                            <AsciiArtText rainbow={true}>
-                                <br />
-                                , ; ,   .-'"""'-.   , ; ,<br/>
-                                \\|/  .'         '.  \|//<br/>
-                                \-;-/   ()   ()   \-;-/<br/>
-                                // ;               ; \\<br/>
-                                //__; :.         .; ;__\\<br/>
-                                `-----\'.'-.....-'.'/-----'<br/>
-                                '.'.-.-,_.'.'<br/>
-                                '(  (..-'<br/>
-                                '-'
-                            </AsciiArtText>
                         </PatchNotesPanel>
 
                         <Button variant={'outline-light'} onClick={() => {
@@ -437,22 +438,31 @@ const BrowserLobby = () => {
 
                     <Col lg={'4'}>
                         <InfoHeading>LEADERBOARD</InfoHeading>
+                        <LeaderboardButton onClick={() => setDisplayLeaderboardName('week')} variant={displayLeaderboardName === 'week' ? 'light' : 'outline-light'}>THIS WEEK</LeaderboardButton>
+                        <LeaderboardButton onClick={() => setDisplayLeaderboardName('month')} variant={displayLeaderboardName === 'month' ? 'light' : 'outline-light'}>THIS MONTH</LeaderboardButton>
+                        <LeaderboardButton onClick={() => setDisplayLeaderboardName('allTime')} variant={displayLeaderboardName === 'allTime' ? 'light' : 'outline-light'}>ALL TIME</LeaderboardButton>
                         <Row>
                             <LeaderboardPlayerNames lg={'6'}>
                                 <InfoList>
-                                    {leaderboard.map((leader) => {
-                                        return <li key={leader.name}><InfoText>{leader.name.toUpperCase()}</InfoText></li>
+                                    {_.get(leaderboards, `[${displayLeaderboardName}]`, []).map((leader) => {
+                                        return (
+                                            <li key={leader.name}>
+                                                <InfoText>
+                                                    {leader.position === 0 ? <HypeText text={leader.name.toUpperCase()} rainbow={true} /> : leader.name.toUpperCase()}
+                                                </InfoText>
+                                            </li>
+                                        )
                                     })}
                                 </InfoList>
                             </LeaderboardPlayerNames>
 
                             <LeaderboardScores lg={'6'}>
                                 <InfoList>
-                                    {leaderboard.map((leader) => {
+                                    {_.get(leaderboards, `[${displayLeaderboardName}]`, []).map((leader) => {
                                         return (
                                             <li key={leader.name}>
                                                 <InfoText>
-                                                    ${leader.score}
+                                                    {leader.position === 0 ? <HypeText text={'$' + leader.score} rainbow={true} /> : '$' + leader.score}
                                                 </InfoText>
                                             </li>
                                         );
@@ -501,7 +511,7 @@ const BrowserLobby = () => {
                 </ButtonWrapper>
 
                 <ActivePlayersText>
-                   {activePlayers} active players
+                   {activePlayers} active game{activePlayers === 1 ? '' : 's'}
                 </ActivePlayersText>
             </Container>
         </div>
