@@ -22,9 +22,9 @@ class jServiceApi{
             if (response) {
                 const parsedJson = response.statusCode == 200 ? JSON.parse(json) : undefined;
                 callback(err, response, parsedJson);
+            } else {
+                callback(false, { 'statusCode': 400 }, {});
             }
-
-            callback(false, { 'statusCode': 400 }, {});
 		});
 	}
 
