@@ -235,7 +235,7 @@ const BrowserLobby = () => {
     const [activePlayers, setActivePlayers] = useState(debug ? 1 : 0);
     const [mute, setMute] = useState(true);
 
-    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(true);
+    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(false);
     const [showEmailPanel, setShowEmailPanel] = useState(false);
 
     const socket = useContext(SocketContext);

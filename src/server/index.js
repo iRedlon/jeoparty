@@ -663,12 +663,8 @@ const submitAnswer = (socket, answer, timeout) => {
         return;
     }
 
-    if (!answer) {
-        answer = '';
-    }
-
     const categoryName = gameSession.finalJeoparty ? gameSession.finalJeopartyClue.categoryName :_.get(gameSession, `categories[${gameSession.categoryIndex}].title`, '');
-    const clue = gameSession.finalJeoparty ? gameSession.finalJeopartyClue : _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[${gameSession.clueIndex}]`, {});
+    const clue = gameSession.finalJeoparty ? gameSession.finalJeopartyClue : _.get(gameSession, `categories[${gameSession.categoryIndex}].clues[${gameSession.clueIndex}]`, { 'question': '', 'answer': ''});
 
     const isCorrect = checkAnswer(categoryName, clue.question, clue.answer, answer);
     const dollarValue = clue.dailyDouble || gameSession.finalJeoparty ? _.get(gameSession, `players[${socket.id}].wager`, 0) : (gameSession.doubleJeoparty ? 400 : 200) * (gameSession.clueIndex + 1);

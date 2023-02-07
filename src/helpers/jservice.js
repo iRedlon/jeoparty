@@ -19,8 +19,12 @@ class jServiceApi{
 	_makeRequest(url, callback) {
 		url = this._url + url;
 		request(url, function(err, response, json) {
-            const parsedJson = response.statusCode == 200 ? JSON.parse(json) : undefined;
-            callback(err, response, parsedJson);
+            if (response) {
+                const parsedJson = response.statusCode == 200 ? JSON.parse(json) : undefined;
+                callback(err, response, parsedJson);
+            }
+
+            callback(false, { 'statusCode': 400 }, {});
 		});
 	}
 

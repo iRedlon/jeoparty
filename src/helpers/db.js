@@ -27,7 +27,7 @@ exports.handleLeaderboardReset = async () => {
             // Check for weekly reset
             let prevMonday = new Date();
             prevMonday.setDate(prevMonday.getDate() - (prevMonday.getDay() + 6) % 7);
-            prevMonday.setHours(9, 0, 0);
+            prevMonday.setHours(9, 0, 0, 0);
 
             if (prevMonday.getTime() > weekStartTime) {
                 // console.log('resetting weekly leaderboard');
@@ -46,7 +46,7 @@ exports.handleLeaderboardReset = async () => {
             let now = new Date();
 
             let firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-            firstDayOfCurrentMonth.setHours(9, 0, 0);
+            firstDayOfCurrentMonth.setHours(9, 0, 0, 0);
 
             if (firstDayOfCurrentMonth.getTime() > monthStartTime) {
                 // console.log('resetting monthly leaderboard');
