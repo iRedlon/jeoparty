@@ -20,27 +20,24 @@ const Player = require('../constants/Player').Player;
 const GameSession = require('../constants/GameSession').GameSession;
 const GameState = require('../constants/GameState').GameState;
 
-// const api = require('../constants/api').api;
+const api = require('../constants/api').api;
 const timers = require('../constants/timers').timers;
 const titles = require('../constants/titles').titles;
-const getRandomCategories = require('../helpers/jservice').getRandomCategories;
+const getRandomCategories = require('../helpers/categories').getRandomCategories;
+const writeCategories = require('../helpers/jservice').writeCategories;
 const checkPlayerName = require('../helpers/check').checkPlayerName;
 const checkAnswer = require('../helpers/check').checkAnswer;
 const formatRaw = require('../helpers/format').formatRaw;
 const formatWager = require('../helpers/format').formatWager;
-const handleLeaderboardReset = require('../helpers/db').handleLeaderboardReset;
-const getLeaderboards = require('../helpers/db').getLeaderboards;
-// const resetLeaderboard = require('../helpers/db').resetLeaderboard;
-const updateLeaderboard = require('../helpers/db').updateLeaderboard;
+const handleLeaderboardReset = require('../helpers/leaderboard').handleLeaderboardReset;
+const getLeaderboards = require('../helpers/leaderboard').getLeaderboards;
+// const resetLeaderboard = require('../helpers/leaderboard').resetLeaderboard;
+const updateLeaderboard = require('../helpers/leaderboard').updateLeaderboard;
 
 const airbrake = new Airbrake.Notifier({
-    projectId: process.env.AIRBRAKE_PROJECT_ID,
-    projectKey: process.env.AIRBRAKE_PROJECT_KEY
+    projectId: process.env.AIRBRAKE_PROJECT_ID || api.AIRBRAKE_PROJECT_ID,
+    projectKey: process.env.AIRBRAKE_PROJECT_KEY || api.AIRBRAKE_PROJECT_KEY
 });
-// const airbrake = new Airbrake.Notifier({
-//     projectId: api.AIRBRAKE_PROJECT_ID,
-//     projectKey: api.AIRBRAKE_PROJECT_KEY
-// });
 
 const STARTING_DECADE = 2000;
 const NUM_CATEGORIES = 6;
@@ -886,6 +883,10 @@ io.on('connection', (socket) => {
                     socket.emit('leaderboards', leaderboards);
                 });
             });
+
+            // writeCategories(STARTING_DECADE, (categories, doubleJeopartyCategories, finalJeopartyClue, error) => {
+            //     handleRandomCategoriesResults(sessionName, STARTING_DECADE, categories, doubleJeopartyCategories, finalJeopartyClue, error);
+            // });
 
             getRandomCategories(STARTING_DECADE, (categories, doubleJeopartyCategories, finalJeopartyClue, error) => {
                 handleRandomCategoriesResults(sessionName, STARTING_DECADE, categories, doubleJeopartyCategories, finalJeopartyClue, error);

@@ -20,4 +20,4 @@ yarn-error.log*
 .idea
 /idea
 
-src/constants/api.js
+categoriesDB.json

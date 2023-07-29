@@ -1,14 +1,12 @@
 const request = require('request');
 const qs = require('query-string');
+const fs = require('fs');
 const _ = require('lodash');
 
 const formatRaw = require('./format').formatRaw;
 const formatCategory = require('./format').formatCategory;
 
-const finalJeopartyClues = require('../constants/finalJeopartyClues.js').finalJeopartyClues;
-
 const MAX_CATEGORY_ID = 18418;
-const NUM_CATEGORIES = 6;
 const NUM_CLUES = 5;
 
 class jServiceApi{
@@ -32,59 +30,13 @@ class jServiceApi{
 		const url = 'category?' + qs.stringify({'id' : id});
 		this._makeRequest(url, callback);
 	}
-
-	random(count, callback) {
-		count = count || 100;
-		count = count > 100 ? 100 : count;
-		const url = 'random?' + qs.stringify({'count' : count});
-		this._makeRequest(url, callback);
-	}
 }
 
 const js = new jServiceApi();
 
-const choice = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-const weightedRandomClueIndex = () => {
-    let sum = 0;
-    let r = Math.random();
-
-    const distribution = {0: 0.05, 1: 0.2, 2: 0.4, 3: 0.2, 4: 0.15};
-
-    for (const i in distribution) {
-        sum += distribution[i];
-
-        if (r <= sum) {
-            return parseInt(i);
-        }
-    }
-};
-
-const getDailyDoubleIndices = () => {
-    const categoryIndex = Math.floor(Math.random() * NUM_CATEGORIES);
-    const clueIndex = weightedRandomClueIndex();
-
-    const djCategoryIndex1 = Math.floor(Math.random() * NUM_CATEGORIES);
-    const djClueIndex1 = weightedRandomClueIndex();
-
-    let djCategoryIndex2;
-    do {
-        djCategoryIndex2 = Math.floor(Math.random() * NUM_CATEGORIES);
-    } while (djCategoryIndex1 === djCategoryIndex2);
-    const djClueIndex2 = weightedRandomClueIndex();
-
-    return [categoryIndex, clueIndex, djCategoryIndex1, djClueIndex1, djCategoryIndex2, djClueIndex2];
-};
-
-const getRandomCategory = (decade, cb) => {
-    const categoryId = Math.floor(Math.random() * MAX_CATEGORY_ID) + 1;
-
+const getRandomCategory = (decade, categoryId, cb) => {
     js.category(categoryId, (error, response, category) => {
         if (!error && response.statusCode === 200) {
-            const cluesCount = category.clues_count;
-            const startingIndex = Math.round((Math.random() * (cluesCount - 5)) / 5) * 5;
-            category.clues = category.clues.slice(startingIndex, startingIndex + 5);
-
             if (approveCategory(category, decade)) {
                 cb(false, formatCategory(category));
             } else {
@@ -92,7 +44,7 @@ const getRandomCategory = (decade, cb) => {
             }
         } else {
             console.log(`Error: ${response.statusCode}`);
-            cb(true, { categoryId: categoryId });
+            cb(true, { categoryId: categoryId, statusCode: response.statusCode });
         }
     });
 };
@@ -101,11 +53,20 @@ const approveCategory = (category, decade) => {
     const rawCategoryTitle = formatRaw(category.title);
     const isMediaCategory = rawCategoryTitle.includes('logo') || rawCategoryTitle.includes('video');
 
-    for (let i = 0; i < NUM_CLUES; i++) {
+    let minClueIndex = 0;
+    let failures = 0;
+
+    for (let i = 0; i < category.clues_count; i++) {
+        if (i < minClueIndex) {
+            continue;
+        }
+
         const clue = category.clues[i];
 
         if (!clue) {
-            return false;
+            minClueIndex += NUM_CLUES;
+            failures += 1;
+            continue;
         }
 
         const year = parseInt(clue.airdate.slice(0, 4));
@@ -120,11 +81,17 @@ const approveCategory = (category, decade) => {
         const isDecade = year >= decade;
 
         if (!isValid || isMediaQuestion || !isDecade) {
-            return false;
+            minClueIndex += NUM_CLUES;
+            failures += 1;
+            continue;
         }
 
         clue.completed = false;
         clue.dailyDouble = false;
+    }
+
+    if (failures >= Math.floor(category.clues_count / NUM_CLUES)) {
+        return false;
     }
 
     category.completed = false;
@@ -133,65 +100,50 @@ const approveCategory = (category, decade) => {
     return !isMediaCategory;
 };
 
-const approveGame = (categories, doubleJeopartyCategories, finalJeopartyClue) => {
-    if (categories.length != NUM_CATEGORIES || doubleJeopartyCategories.length != NUM_CATEGORIES || !_.get(finalJeopartyClue, 'question')) {
-        return false;
+exports.writeCategories = (decade, cb) => {
+    let i = 14590;
+
+    const writeCategoriesDB = (category) => {
+        const JSON_FILE = './categoriesDB.json';
+
+        try {
+            const jsonData = fs.readFileSync(JSON_FILE);
+            let categoriesDB = JSON.parse(jsonData);
+
+            categoriesDB[category.id] = category;
+            fs.writeFileSync(JSON_FILE, JSON.stringify(categoriesDB));
+          } catch (error) {
+            console.error(error);
+            throw error;
+          }
     }
 
-    for (let i = 0; i < NUM_CLUES; i++) {
-        let category = categories[i];
-        let doubleJeopartyCategory = doubleJeopartyCategories[i];
-
-        if (!category || category.clues.length != NUM_CLUES || !doubleJeopartyCategory || doubleJeopartyCategory.clues.length != NUM_CLUES) {
-            return false;
-        }
-    }
-
-    return true;
-};
-
-exports.getRandomCategories = (decade, cb) => {
-    let categories = [];
-    let doubleJeopartyCategories = [];
-    let finalJeopartyClue = {};
-    let usedCategoryIds = [];
-
-    const recursiveGetRandomCategory = () => {
-        getRandomCategory(decade, (error, category) => {
-            if (error) {
-                cb(categories, doubleJeopartyCategories, finalJeopartyClue, true);
-            } else if (!category || usedCategoryIds.includes(category.id) || !category.clues || category.clues.length != NUM_CLUES) {
-                recursiveGetRandomCategory();
+    const recursiveGetCategory = () => {
+        getRandomCategory(decade, i, (error, category) => {
+            if (error && category.statusCode != 404) {
+                console.log(error);
+                console.log(error.code);
+                // console.log(`Stopping recursion. Error: ${error}`);
+                return;
+            } else if (i > MAX_CATEGORY_ID) {
+                // console.log(`Mission complete!`);
+                return;
+            } else if (!category || !category.clues || category.clues_count == 0) {
+                // console.log(`Skipping category id: ${category.categoryId}`);
             } else {
-                if (categories.length < NUM_CATEGORIES) {
-                    categories.push(category);
-                } else if (doubleJeopartyCategories.length < NUM_CATEGORIES) {
-                    doubleJeopartyCategories.push(category);
-                } else {
-                    finalJeopartyClue = choice(finalJeopartyClues);
-                    finalJeopartyClue.categoryName = finalJeopartyClue.category;
-                }
-
-                usedCategoryIds.push(category.id);
-
-                if (approveGame(categories, doubleJeopartyCategories, finalJeopartyClue)) {
-                    const [categoryIndex, clueIndex, djCategoryIndex1, djClueIndex1, djCategoryIndex2, djClueIndex2] = getDailyDoubleIndices();
-                    categories[categoryIndex].clues[clueIndex].dailyDouble = true;
-                    doubleJeopartyCategories[djCategoryIndex1].clues[djClueIndex1].dailyDouble = true;
-                    doubleJeopartyCategories[djCategoryIndex2].clues[djClueIndex2].dailyDouble = true;
-
-                    // DEBUG
-                    // const categoryName = categories[categoryIndex].title;
-                    // const dollarValue = 200 * (clueIndex + 1);
-                    // console.log(`Daily double is '${categoryName} for $${dollarValue}'`);
-
-                    cb(categories, doubleJeopartyCategories, finalJeopartyClue, false);
-                } else {
-                    recursiveGetRandomCategory();
-                }
+                console.log(`===================== WRITING CATEGORY ID: ${category.id} =====================`);
+                writeCategoriesDB(category);
             }
+
+            let pauseTime = (i % 9 == 0) ? 20 * 1000 : 1 * 1000;
+            // console.log(`!!!!!!!!!!! PAUSING for ${pauseTime / 1000} second(s) !!!!!!!!!`);
+            setTimeout(() => {
+                // console.log("~~~~~~~~~~~ RESUMING ~~~~~~~~~~\n");
+                i++;
+                recursiveGetCategory();
+            }, pauseTime);
         });
     };
 
-    recursiveGetRandomCategory();
+    recursiveGetCategory();
 };

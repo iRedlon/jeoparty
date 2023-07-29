@@ -72,9 +72,7 @@ exports.formatDisplay = (original) => {
 };
 
 exports.formatCategory = (category) => {
-    const NUM_CLUES = 5;
-
-    for (let i = 0; i < NUM_CLUES; i++) {
+    for (let i = 0; i < category.clues.length; i++) {
         let question = category.clues[i].question;
 
         // Backslashes
