@@ -235,7 +235,7 @@ const BrowserLobby = () => {
     const [activePlayers, setActivePlayers] = useState(debug ? 1 : 0);
     const [mute, setMute] = useState(true);
 
-    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(false);
+    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(true);
     const [showEmailPanel, setShowEmailPanel] = useState(false);
 
     const socket = useContext(SocketContext);
@@ -387,19 +387,13 @@ const BrowserLobby = () => {
                             <h1>Update</h1>
 
                             <PatchNotesText>
-                                I've been waiting for Jeoparty! to be crash-free to work on bigger features. It looks like my most recent update helped.
-                                If you're still seeing crashes anywhere in the game PLEASE send me an email, I want the game to be in a stable state.
-                                Thank you to everyone who played even when you couldn't finish games 90% of the time.
+                                Hey! Sorry the game has been down for a while! Jeoparty! was making way too many daily requests to the API I was relying on, so I finally added my own local database of clues. Jeoparty! no longer has any dependency on an external clue API... yay!
                                 <br /><br />
-                                For now, take this new feature: monthly, weekly, and all-time leaderboards! With this change, I'm clearing the leaderboards completely.
-                                Sorry Randolph 1-10... it was a good run.
-                                <br /><br />
-                                A final note: you may have noticed that I added decade selection and removed it immediately. There are issues with the clue database. Decade
-                                selection will be back soon. For now, all categories are from the year 2000+
-
+                                I'm lazy (if you couldn't already tell) so I procrastinated this for several years. But here we are today. Everything should be back to normal. If you're someone who still cared 
+                                to check this website and play a game even after months of inactivity... you're the real MVP!
                                 <br /><br />
                                 -Isaac<br/>
-                                1/30/2023
+                                7/28/2023
                             </PatchNotesText>
                         </PatchNotesPanel>
 
