@@ -101,7 +101,7 @@ const approveCategory = (category, decade) => {
 };
 
 exports.writeCategories = (decade, cb) => {
-    let i = 14590;
+    let i = 28164;
 
     const writeCategoriesDB = (category) => {
         const JSON_FILE = './categoriesDB.json';
@@ -125,7 +125,7 @@ exports.writeCategories = (decade, cb) => {
                 console.log(error.code);
                 // console.log(`Stopping recursion. Error: ${error}`);
                 return;
-            } else if (i > MAX_CATEGORY_ID) {
+            } else if (i > 40000) {
                 // console.log(`Mission complete!`);
                 return;
             } else if (!category || !category.clues || category.clues_count == 0) {

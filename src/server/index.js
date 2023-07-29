@@ -140,7 +140,7 @@ const handleRandomCategoriesResults = (sessionName, decade, categories, doubleJe
     const gameSession = sessionCache.get(sessionName);
 
     if (error) {
-        gameSession.browserClient.emit('alert', `The database that powers Jeoparty! (jservice.io) has a request limit, and we reached it! Try again in one minute.`);
+        gameSession.browserClient.emit('alert', `We stalled out trying to generate categories! Please refresh the page and try again.`);
         return;
     }
 
@@ -949,8 +949,8 @@ io.on('connection', (socket) => {
             updateGameSession(socket.sessionName, 'decade', decade);
             updateGameSession(socket.sessionName, 'categoriesLoaded', false);
 
-            getRandomCategories(decade, (categories, doubleJeopartyCategories, finalJeopartyClue) => {
-                handleRandomCategoriesResults(socket.sessionName, decade, categories, doubleJeopartyCategories, finalJeopartyClue);
+            getRandomCategories(decade, (categories, doubleJeopartyCategories, finalJeopartyClue, error) => {
+                handleRandomCategoriesResults(socket.sessionName, decade, categories, doubleJeopartyCategories, finalJeopartyClue, error);
             });
         }
     });

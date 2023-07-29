@@ -440,7 +440,7 @@ const BrowserLobby = () => {
                                 <InfoList>
                                     {_.get(leaderboards, `[${displayLeaderboardName}]`, []).map((leader) => {
                                         return (
-                                            <li key={leader.name}>
+                                            <li key={`${displayLeaderboardName}${leader.name}`}>
                                                 <InfoText>
                                                     {leader.position === 0 ? <HypeText text={leader.name.toUpperCase()} rainbow={true} /> : leader.name.toUpperCase()}
                                                 </InfoText>
@@ -454,7 +454,7 @@ const BrowserLobby = () => {
                                 <InfoList>
                                     {_.get(leaderboards, `[${displayLeaderboardName}]`, []).map((leader) => {
                                         return (
-                                            <li key={leader.name}>
+                                            <li key={`${displayLeaderboardName}${leader.name}${leader.score}`}>
                                                 <InfoText>
                                                     {leader.position === 0 ? <HypeText text={'$' + leader.score} rainbow={true} /> : '$' + leader.score}
                                                 </InfoText>
@@ -468,7 +468,7 @@ const BrowserLobby = () => {
                 </InfoRow>
 
                 <StartGameInputGroup className={'mb-3 justify-content-center'}>
-                    {/* {
+                    {
                         categoriesLoaded && (
                             <DecadeDropdown
                                 id={`dropdown-split-variants-outline-light`}
@@ -477,13 +477,11 @@ const BrowserLobby = () => {
                                 onSelect={handleDecadeDropdownSelect}
                                 value={decade}
                             >
-                                <Dropdown.Item eventKey={1980} value={1980} active={decade === 1980}>1980+</Dropdown.Item>
-                                <Dropdown.Item eventKey={1990} value={1990} active={decade === 1990}>1990+</Dropdown.Item>
                                 <Dropdown.Item eventKey={2000} value={2000} active={decade === 2000}>2000+</Dropdown.Item>
                                 <Dropdown.Item eventKey={2010} value={2010} active={decade === 2010}>2010+</Dropdown.Item>
                             </DecadeDropdown>
                         )
-                    } */}
+                    }
                     
 
                     {

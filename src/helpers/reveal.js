@@ -79,42 +79,42 @@ export const revealCategories = (categories, doubleJeoparty, setCategoryPanelInd
         setCategoryPanelIndex(0);
 
         setTimeout(() => {
-            sayCategoryRevealFiller(_.get(categories, '[0].title'), () => {
+            sayCategoryRevealFiller(_.get(categories, '[0].title'), _.get(categories, '[0].year'), () => {
                 setCategoryRevealIndex(1);
 
                 setTimeout(() => {
                     setCategoryPanelIndex(1);
 
                     setTimeout(() => {
-                        sayCategoryRevealFiller(_.get(categories, '[1].title'), () => {
+                        sayCategoryRevealFiller(_.get(categories, '[1].title'), _.get(categories, '[1].year'), () => {
                             setCategoryRevealIndex(2);
 
                             setTimeout(() => {
                                 setCategoryPanelIndex(2);
 
                                 setTimeout(() => {
-                                    sayCategoryRevealFiller(_.get(categories, '[2].title'), () => {
+                                    sayCategoryRevealFiller(_.get(categories, '[2].title'), _.get(categories, '[2].year'), () => {
                                         setCategoryRevealIndex(3);
 
                                         setTimeout(() => {
                                             setCategoryPanelIndex(3);
 
                                             setTimeout(() => {
-                                                sayCategoryRevealFiller(_.get(categories, '[3].title'), () => {
+                                                sayCategoryRevealFiller(_.get(categories, '[3].title'), _.get(categories, '[3].year'), () => {
                                                     setCategoryRevealIndex(4);
 
                                                     setTimeout(() => {
                                                         setCategoryPanelIndex(4);
 
                                                         setTimeout(() => {
-                                                            sayCategoryRevealFiller(_.get(categories, '[4].title'), () => {
+                                                            sayCategoryRevealFiller(_.get(categories, '[4].title'), _.get(categories, '[4].year'), () => {
                                                                 setCategoryRevealIndex(5);
 
                                                                 setTimeout(() => {
                                                                     setCategoryPanelIndex(5);
 
                                                                     setTimeout(() => {
-                                                                        sayCategoryRevealFiller(`and ${_.get(categories, '[5].title')}`, () => {
+                                                                        sayCategoryRevealFiller(`and ${_.get(categories, '[5].title')}`, _.get(categories, '[5].year'), () => {
                                                                             onEnd();
                                                                         });
                                                                     }, 500);

@@ -6,6 +6,41 @@ const api = require('../constants/api').api;
 const client = new MongoClient(process.env.MONGO_DB_URL || api.MONGO_DB_URL);
 const connection = client.connect();
 
+const TOWN_OF_SALEM_NAMES = [
+    'Cotton Mather',
+    'Deodat Lawson',
+    'Edward Bishop',
+    'Giles Corey',
+    'James Bayley',
+    'James Russel',
+    'John Hathorne',
+    'John Proctor',
+    'John Willard',
+    'Jonathan Corwin',
+    'Samuel Parris',
+    'Samuel Sewall',
+    'Thomas Danforth',
+    'William Hobbs',
+    'William Phips',
+    'Abigail Hobbs',
+    'Alice Young',
+    'Ann Hibbins',
+    'Ann Putnam',
+    'Ann Sears',
+    'Betty Parris',
+    'Dorothy Good',
+    'Lydia Dustin',
+    'Martha Corey',
+    'Mary Eastey',
+    'Mary Johnson',
+    'Mary Warren',
+    'Sarah Bishop',
+    'Sarah Good',
+    'Sarah Wildes'
+];
+
+const choice = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 
 exports.handleLeaderboardReset = async () => {
     try {
@@ -99,6 +134,8 @@ exports.getLeaderboards = async () => {
 }
 
 const addLeader = async (player) => {
+    const PLAYER_NAME = player.name.length === 0 ? choice(TOWN_OF_SALEM_NAMES) : player.name;
+
     try {
         await connection;
 
@@ -130,7 +167,7 @@ const addLeader = async (player) => {
                             } else {
                                 await leaderboardCol.findOneAndUpdate({ 'position': i }, {
                                     '$set': {
-                                        'name': player.name, 'score': player.score
+                                        'name': PLAYER_NAME, 'score': player.score
                                     }
                                 });
                             }

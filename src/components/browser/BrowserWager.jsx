@@ -162,7 +162,7 @@ const BrowserWager = () => {
 
                 finalJeopartyPingAudio.onended = () => {
                     setRevealFinalJeopartyCategory(true);
-                    sayCategoryRevealFiller(finalJeopartyClue.categoryName, () => {
+                    sayCategoryRevealFiller(finalJeopartyClue.categoryName, finalJeopartyClue.year, () => {
                         setTimeout(() => {
                             setShowFinalJeopartyCategoryReveal(false);
                             sayFinalJeopartyWagerFiller(() => {

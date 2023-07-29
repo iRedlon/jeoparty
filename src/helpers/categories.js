@@ -1,5 +1,3 @@
-const request = require('request');
-const qs = require('query-string');
 const _ = require('lodash');
 
 const formatRaw = require('./format').formatRaw;
@@ -45,7 +43,7 @@ const getDailyDoubleIndices = () => {
     return [categoryIndex, clueIndex, djCategoryIndex1, djClueIndex1, djCategoryIndex2, djClueIndex2];
 };
 
-const getRandomCategory = (decade, cb) => {
+const getRandomCategory = (decade) => {
     const categoryId = Math.floor(Math.random() * MAX_CATEGORY_ID) + 1;
 
     if (categoryId in categoriesDB) {
@@ -56,18 +54,22 @@ const getRandomCategory = (decade, cb) => {
         category.clues = category.clues.slice(startingIndex, startingIndex + NUM_CLUES);
 
         if (approveCategory(category, decade)) {
-            cb(false, formatCategory(category));
+            return category;
         } else {
-            cb(false, { categoryId: categoryId });
+            return null;
         }
     } else {
-        cb(false, { categoryId: categoryId });
+        return null;
     }
 };
 
 const approveCategory = (category, decade) => {
     const rawCategoryTitle = formatRaw(category.title);
     const isMediaCategory = rawCategoryTitle.includes('logo') || rawCategoryTitle.includes('video');
+
+    if (isMediaCategory) {
+        return false;
+    }
 
     for (let i = 0; i < NUM_CLUES; i++) {
         const clue = category.clues[i];
@@ -95,10 +97,11 @@ const approveCategory = (category, decade) => {
         clue.dailyDouble = false;
     }
 
+    category.year = category.clues[0].airdate.slice(0, 4);
     category.completed = false;
     category.numCluesUsed = 0;
 
-    return !isMediaCategory;
+    return true;
 };
 
 const approveGame = (categories, doubleJeopartyCategories, finalJeopartyClue) => {
@@ -124,54 +127,55 @@ exports.getRandomCategories = (decade, cb) => {
     let finalJeopartyClue = {};
     let usedCategoryIds = [];
 
-    const recursiveGetRandomCategory = () => {
-        getRandomCategory(decade, (error, category) => {
-            if (error) {
-                cb(categories, doubleJeopartyCategories, finalJeopartyClue, true);
-            } else if (!category || usedCategoryIds.includes(category.id) || !category.clues || category.clues.length != NUM_CLUES) {
-                recursiveGetRandomCategory();
-            } else {
-                if (categories.length < NUM_CATEGORIES) {
-                    categories.push(category);
-                } else if (doubleJeopartyCategories.length < NUM_CATEGORIES) {
-                    doubleJeopartyCategories.push(category);
-                } else {
-                    finalJeopartyClue = choice(finalJeopartyClues);
-                    finalJeopartyClue.categoryName = finalJeopartyClue.category;
-                }
+    let iterations = 0;
 
-                usedCategoryIds.push(category.id);
+    while (true) {
+        iterations++;
+        if (iterations > 100000) {
+            cb(categories, doubleJeopartyCategories, finalJeopartyClue, true);
+            return;
+        }
 
-                if (approveGame(categories, doubleJeopartyCategories, finalJeopartyClue)) {
-                    const [categoryIndex, clueIndex, djCategoryIndex1, djClueIndex1, djCategoryIndex2, djClueIndex2] = getDailyDoubleIndices();
-                    categories[categoryIndex].clues[clueIndex].dailyDouble = true;
-                    doubleJeopartyCategories[djCategoryIndex1].clues[djClueIndex1].dailyDouble = true;
-                    doubleJeopartyCategories[djCategoryIndex2].clues[djClueIndex2].dailyDouble = true;
+        let category = getRandomCategory(decade);
 
-                    // DEBUG
-                    // const categoryName = categories[categoryIndex].title;
-                    // const dollarValue = 200 * (clueIndex + 1);
-                    // console.log(`Daily double is '${categoryName} for $${dollarValue}'`);
+        if (!category || usedCategoryIds.includes(category.id) || !category.clues || category.clues.length != NUM_CLUES) {
+            continue;
+        }
 
-                    // console.log("======================== START JEOPARTY CATEGORIES ========================");
-                    // console.log(categories);
-                    // console.log("======================== END JEOPARTY CATEGORIES ========================\n");
+        usedCategoryIds.push(category.id);
 
-                    // console.log("======================== START DOUBLE JEOPARTY CATEGORIES ========================");
-                    // console.log(doubleJeopartyCategories);
-                    // console.log("======================== END DOUBLE JEOPARTY CATEGORIES ========================\n");
+        if (categories.length < NUM_CATEGORIES) {
+            categories.push(category);
+            continue;
+        } else if (doubleJeopartyCategories.length < NUM_CATEGORIES) {
+            doubleJeopartyCategories.push(category);
+            continue;
+        } else {
+            finalJeopartyClue = choice(finalJeopartyClues);
+            finalJeopartyClue.categoryName = finalJeopartyClue.category;
+        }
 
-                    // console.log("======================== START FINAL JEOPARTY CLUE ========================");
-                    // console.log(finalJeopartyClue);
-                    // console.log("======================== END FINAL JEOPARTY CLUE ========================\n");
+        if (approveGame(categories, doubleJeopartyCategories, finalJeopartyClue)) {
+            const [categoryIndex, clueIndex, djCategoryIndex1, djClueIndex1, djCategoryIndex2, djClueIndex2] = getDailyDoubleIndices();
+            categories[categoryIndex].clues[clueIndex].dailyDouble = true;
+            doubleJeopartyCategories[djCategoryIndex1].clues[djClueIndex1].dailyDouble = true;
+            doubleJeopartyCategories[djCategoryIndex2].clues[djClueIndex2].dailyDouble = true;
 
-                    cb(categories, doubleJeopartyCategories, finalJeopartyClue, false);
-                } else {
-                    recursiveGetRandomCategory();
-                }
-            }
-        });
-    };
+            // console.log("======================== START JEOPARTY CATEGORIES ========================");
+            // console.log(categories);
+            // console.log("======================== END JEOPARTY CATEGORIES ========================\n");
 
-    recursiveGetRandomCategory();
+            // console.log("======================== START DOUBLE JEOPARTY CATEGORIES ========================");
+            // console.log(doubleJeopartyCategories);
+            // console.log("======================== END DOUBLE JEOPARTY CATEGORIES ========================\n");
+
+            // console.log("======================== START FINAL JEOPARTY CLUE ========================");
+            // console.log(finalJeopartyClue);
+            // console.log("======================== END FINAL JEOPARTY CLUE ========================\n");
+
+            break;
+        }
+    }
+
+    cb(categories, doubleJeopartyCategories, finalJeopartyClue, false);
 };

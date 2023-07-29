@@ -39,14 +39,15 @@ export const sayCategoryRevealIntroductionFiller = (doubleJeoparty, onComplete) 
     say(text, onComplete);
 };
 
-export const sayCategoryRevealFiller = (categoryName, onComplete) => {
+export const sayCategoryRevealFiller = (categoryName, year, onComplete) => {
     const quotedWords = getQuotedWords(categoryName);
     const options = [
-        `with ${quotedWords.join(' and ')} in quotations`
+        ` with ${quotedWords.join(' and ')} in quotations`
     ];
     const quotedWordsText = !_.isEmpty(quotedWords) ? choice(options) : '';
+    const yearText = ` from ${year}`;
 
-    const text = categoryName + quotedWordsText;
+    const text = categoryName + quotedWordsText + yearText;
     say(text, onComplete);
 };
 
