@@ -440,7 +440,7 @@ const BrowserLobby = () => {
                                 <InfoList>
                                     {_.get(leaderboards, `[${displayLeaderboardName}]`, []).map((leader) => {
                                         return (
-                                            <li key={`${displayLeaderboardName}${leader.name}`}>
+                                            <li key={`${displayLeaderboardName}${leader.position}${leader.name}`}>
                                                 <InfoText>
                                                     {leader.position === 0 ? <HypeText text={leader.name.toUpperCase()} rainbow={true} /> : leader.name.toUpperCase()}
                                                 </InfoText>
@@ -454,7 +454,7 @@ const BrowserLobby = () => {
                                 <InfoList>
                                     {_.get(leaderboards, `[${displayLeaderboardName}]`, []).map((leader) => {
                                         return (
-                                            <li key={`${displayLeaderboardName}${leader.name}${leader.score}`}>
+                                            <li key={`${displayLeaderboardName}${leader.position}${leader.score}`}>
                                                 <InfoText>
                                                     {leader.position === 0 ? <HypeText text={'$' + leader.score} rainbow={true} /> : '$' + leader.score}
                                                 </InfoText>
