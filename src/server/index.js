@@ -878,11 +878,17 @@ io.on('connection', (socket) => {
             socket.emit('session_name', sessionName);
             socket.emit('active_players', sessionCache.keys().length - 1);
 
-            handleLeaderboardReset().then(() => {
+            if (process.env.AIRBRAKE_PROJECT_ID) {
+                handleLeaderboardReset().then(() => {
+                    getLeaderboards().then((leaderboards) => {
+                        socket.emit('leaderboards', leaderboards);
+                    });
+                });
+            } else {
                 getLeaderboards().then((leaderboards) => {
                     socket.emit('leaderboards', leaderboards);
                 });
-            });
+            }
 
             // writeCategories(STARTING_DECADE, (categories, doubleJeopartyCategories, finalJeopartyClue, error) => {
             //     handleRandomCategoriesResults(sessionName, STARTING_DECADE, categories, doubleJeopartyCategories, finalJeopartyClue, error);

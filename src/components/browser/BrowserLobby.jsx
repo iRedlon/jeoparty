@@ -120,6 +120,12 @@ const LogoText = styled.h1`
     margin-bottom: 0;
 `;
 
+const LeaderboardText = styled.h5`
+    font-family: clue, serif;
+    font-size: 2.5vh;
+    text-shadow: 0.1em 0.1em #000;
+`;
+
 const InfoText = styled.h5`
     font-family: clue, serif;
     font-size: 3vh;
@@ -235,7 +241,7 @@ const BrowserLobby = () => {
     const [activePlayers, setActivePlayers] = useState(debug ? 1 : 0);
     const [mute, setMute] = useState(true);
 
-    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(true);
+    const [showPatchNotesPanel, setShowPatchNotesPanel] = useState(false);
     const [showEmailPanel, setShowEmailPanel] = useState(false);
 
     const socket = useContext(SocketContext);
@@ -441,9 +447,9 @@ const BrowserLobby = () => {
                                     {_.get(leaderboards, `[${displayLeaderboardName}]`, []).map((leader) => {
                                         return (
                                             <li key={`${displayLeaderboardName}${leader.position}${leader.name}`}>
-                                                <InfoText>
+                                                <LeaderboardText>
                                                     {leader.position === 0 ? <HypeText text={leader.name.toUpperCase()} rainbow={true} /> : leader.name.toUpperCase()}
-                                                </InfoText>
+                                                </LeaderboardText>
                                             </li>
                                         )
                                     })}
@@ -455,9 +461,9 @@ const BrowserLobby = () => {
                                     {_.get(leaderboards, `[${displayLeaderboardName}]`, []).map((leader) => {
                                         return (
                                             <li key={`${displayLeaderboardName}${leader.position}${leader.score}`}>
-                                                <InfoText>
+                                                <LeaderboardText>
                                                     {leader.position === 0 ? <HypeText text={'$' + leader.score} rainbow={true} /> : '$' + leader.score}
-                                                </InfoText>
+                                                </LeaderboardText>
                                             </li>
                                         );
                                     })}
