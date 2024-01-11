@@ -10,15 +10,15 @@ exports.formatRaw = (original) => {
     // HTML tags
     rawOriginal = rawOriginal.replace(/<i>/g, "");
     rawOriginal = rawOriginal.replace("</i>", "");
+ 
+    // Red words
+    rawOriginal = rawOriginal.replace(/and /g, "");
+    rawOriginal = rawOriginal.replace(/the /g, "");
 
     // Punctuation
     rawOriginal = rawOriginal.replace(/[^a-zA-Z0-9]/g, "");
     rawOriginal = rawOriginal.replace(/\s{2,}/g, "");
     rawOriginal = rawOriginal.replace(String.fromCharCode(92), "");
-
-    // Red words
-    rawOriginal = rawOriginal.replace(/and /g, "");
-    rawOriginal = rawOriginal.replace(/the /g, "");
 
     // Spacing
     // rawOriginal = rawOriginal.replace(/ /g, "");
