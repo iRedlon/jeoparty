@@ -20,7 +20,6 @@ exports.formatRaw = (original) => {
     rawOriginal = rawOriginal.replace(/\s{2,}/g, "");
     rawOriginal = rawOriginal.replace(String.fromCharCode(92), "");
 
-
     // Spacing
     // rawOriginal = rawOriginal.replace(/ /g, "");
 
